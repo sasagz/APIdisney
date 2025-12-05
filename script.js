@@ -1,53 +1,49 @@
-// Exemplo de "banco de dados" de personagens
-const characters = [
-    {
-        name: "Mickey Mouse",
-        movie: "Vários",
-        imageUrl: "https://upload.wikimedia.org/wikipedia/en/d/d4/Mickey_Mouse.png"
-    },
-    {
-        name: "Elsa",
-        movie: "Frozen",
-        imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/f/f8/Elsa_EFP.png/220px-Elsa_EFP.png"
-    },
-    {
-        name: "Simba",
-        movie: "O Rei Leão",
-        imageUrl: "https://upload.wikimedia.org/wikipedia/en/3/3d/Simba_disney.png"
-    }
-];
-
 const searchButton = document.getElementById("searchButton");
 const searchInput = document.getElementById("searchInput");
 const resultContainer = document.getElementById("resultContainer");
 
-searchButton.addEventListener("click", () => {
-    const query = searchInput.value.toLowerCase();
+searchButton.addEventListener("click", async () => {
+    const query = searchInput.value.trim();
     resultContainer.innerHTML = "";
 
-    const found = characters.filter(c => c.name.toLowerCase().includes(query));
+    if (query === "") {
+        resultContainer.innerHTML = "<p>Digite um nome!</p>";
+        return;
+    }
 
-    if (found.length === 0) {
-        resultContainer.innerHTML = "<p>Personagem não encontrado.</p>";
-    } else {
-        found.forEach(c => {
-            const card = document.createElement("div");
-            card.className = "card";
+    const url = `https://api.disneyapi.dev/character?name=${encodeURIComponent(query)}`;
 
-            const img = document.createElement("img");
-            img.src = c.imageUrl;
+    try {
+        const response = await fetch(url);
+        const json = await response.json();
 
-            const name = document.createElement("p");
-            name.textContent = "Nome: " + c.name;
+        if (!json.data || json.data.length === 0) {
+            resultContainer.innerHTML = "<p>Personagem não encontrado.</p>";
+            return;
+        }
 
-            const movie = document.createElement("p");
-            movie.textContent = "Filme: " + c.movie;
+        const character = json.data[0]; // primeiro resultado
 
-            card.appendChild(img);
-            card.appendChild(name);
-            card.appendChild(movie);
+        const card = document.createElement("div");
+        card.className = "card";
 
-            resultContainer.appendChild(card);
-        });
+        card.innerHTML = `
+            <img src="${character.imageUrl}" alt="${character.name}">
+            <h2>${character.name}</h2>
+            <h3>Filmes:</h3>
+            <ul>
+                ${
+                    character.films.length > 0 
+                    ? character.films.map(f => `<li>${f}</li>`).join("")
+                    : "<li>Sem filmes encontrados.</li>"
+                }
+            </ul>
+        `;
+
+        resultContainer.appendChild(card);
+
+    } catch (error) {
+        resultContainer.innerHTML = "<p>Erro ao buscar personagem.</p>";
+        console.error(error);
     }
 });
