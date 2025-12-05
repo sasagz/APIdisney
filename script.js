@@ -11,7 +11,8 @@ searchButton.addEventListener("click", async () => {
         return;
     }
 
-    const url = `https://api.disneyapi.dev/character?name=${encodeURIComponent(query)}`;
+    // USANDO PROXY POR CAUSA DO CORS
+    const url = `https://cors-anywhere.herokuapp.com/https://api.disneyapi.dev/character?name=${encodeURIComponent(query)}`;
 
     try {
         const response = await fetch(url);
@@ -22,7 +23,7 @@ searchButton.addEventListener("click", async () => {
             return;
         }
 
-        const character = json.data[0]; // primeiro resultado
+        const character = json.data[0];
 
         const card = document.createElement("div");
         card.className = "card";
