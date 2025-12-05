@@ -11,12 +11,16 @@ searchButton.addEventListener("click", async () => {
         return;
     }
 
-    // USANDO PROXY POR CAUSA DO CORS
-    const url = `https://cors-anywhere.herokuapp.com/https://api.disneyapi.dev/character?name=${encodeURIComponent(query)}`;
+    // API correta com CORS fix usando AllOrigins
+    const originalUrl = `https://api.disneyapi.dev/character?name=${encodeURIComponent(query)}`;
+    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(originalUrl)}`;
 
     try {
-        const response = await fetch(url);
-        const json = await response.json();
+        const response = await fetch(proxyUrl);
+        const data = await response.json();
+
+        // AllOrigins retorna JSON dentro de "contents"
+        const json = JSON.parse(data.contents);
 
         if (!json.data || json.data.length === 0) {
             resultContainer.innerHTML = "<p>Personagem não encontrado.</p>";
